@@ -1,0 +1,179 @@
+% Modified based on Xiaoming Sun's template and https://www.overleaf.com/latex/templates/cs6780-assignment-template/hgjyygbykvrf
+
+\documentclass[a4 paper,12pt]{article}
+\usepackage[inner=2.0cm,outer=2.0cm,top=2.0cm,bottom=2.0cm]{geometry}
+\linespread{1.1}
+\usepackage{setspace}
+\usepackage[rgb]{xcolor}
+\usepackage{verbatim}
+\usepackage{subcaption}
+\usepackage{fancyhdr}
+\usepackage{fullpage}
+\usepackage[colorlinks=true, urlcolor=blue, linkcolor=blue, citecolor=blue]{hyperref}
+\usepackage{booktabs}
+\usepackage{amsmath,amsfonts,amsthm,amssymb}
+\usepackage[shortlabels]{enumitem}
+\usepackage{setspace}
+\usepackage{extramarks}
+\usepackage{soul,color}
+\usepackage{graphicx,float,wrapfig}
+\newcommand{\homework}[3]{
+	\pagestyle{myheadings}
+	\thispagestyle{plain}
+	\newpage
+	\setcounter{page}{1}
+	\noindent
+	\begin{center}
+		\framebox{
+			\vbox{\vspace{2mm}
+				\hbox to 6.28in { {\bf Deep Learning \hfill} {\hfill {\rm #2} {\rm #3}} }
+				\vspace{4mm}
+				\hbox to 6.28in { {\Large \hfill #1  \hfill} }
+				\vspace{3mm}}
+		}
+	\end{center}
+	\vspace*{4mm}
+}
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+\usepackage[english]{babel}
+%Includes "References" in the table of contents
+\usepackage[nottoc]{tocbibind}
+\begin{document}
+	\homework{Homework 4}{2023040163}{Zhao Han Hong}
+	
+	\section*{1 True or False Questions}
+	\section*{Problem 1}
+
+	True.
+	\section*{2 Q \& A}
+\newcommand*{\norm}[1]{\left|\left|#1\right|\right|}
+\newcommand*{\E}[0]{\mathbb{E}}
+\newcommand*{\p}[0]{\mathbb{P}}
+\section*{Problem 2}
+\paragraph*{1.} 
+We can directly get
+\[
+x_t=\sqrt{\alpha_t\alpha_{t-1}\cdots\alpha_{1}}x_0+\sqrt{1-\alpha_t}\epsilon_{t-1}+\sqrt{\alpha_t (1-\alpha_{t-1})}\epsilon_{t-2}+\cdots+\sqrt{\alpha_t\alpha_{t-1}\cdots\alpha_{2}(1-\alpha_1)}\epsilon_0.
+\] Next, we use the moment generating function to get the distribution of 
+\[
+\epsilon=\frac{1}{\sqrt{1-\bar{\alpha_t}}}\left(\sqrt{1-\alpha_t}\epsilon_{t-1}+\sqrt{\alpha_t (1-\alpha_{t-1})}\epsilon_{t-2}+\cdots+\sqrt{\alpha_t\alpha_{t-1}\cdots\alpha_{2}(1-\alpha_1)}\epsilon_0\right).
+\] Since the linear combinations of independent Gaussian variables are still Gaussian, we know that $\epsilon$ is Gaussian. Moreover, we can compute the mean and variance of $\epsilon$: $\E(\epsilon)=0,$
+\newcommand*{\I}[0]{\mathbf{I}}
+\newcommand*{\V}[0]{\mathbb{V}}
+\begin{align*}
+\V(\epsilon)&=\frac{(1-\alpha_t)\I+\alpha_t(1-\alpha_{t-1})\I+\cdots+\alpha_t\alpha_{t-1}\cdots\alpha_2(1-\alpha_1)\I}{1-\bar{\alpha_t}}\\
+&=\frac{1-\alpha_t\alpha_{t-1}\cdots\alpha_1}{1-\alpha_t\alpha_{t-1}\cdots\alpha_1}\I=\I.
+\end{align*} Thus, we know that $\epsilon\sim \mathcal{N}(0,\I)$, so we are done.
+
+
+
+\paragraph*{2.}
+Given $x_t$ and $x_0$, $\epsilon$ is then fixed by
+\[
+\epsilon=\frac{x_t-\sqrt{\bar{\alpha_t}}x_0}{\sqrt{1-\bar{\alpha_t}}}.	
+\] The conditional probability is given by
+\[
+q(x_{t-1}|x_t,x_0)=\frac{p_{\epsilon'}(\epsilon')p_{\epsilon_{t-1}}(\epsilon_{t-1})}{p_\epsilon(\epsilon)},
+\]where
+\begin{gather*}
+\epsilon_{t-1}=\frac{x_t-\sqrt{\alpha_t}x_{t-1}}{\sqrt{1-\alpha_t}},\\
+\epsilon'=\frac{x_{t-1}-\sqrt{\alpha_{t-1}\cdots\alpha_1}x_0}{\sqrt{1-\alpha_{t-1}\cdots\alpha_1}}=\frac{\sqrt{1-\alpha_{t-1}}\epsilon_{t-2}+\sqrt{\alpha_{t-1} (1-\alpha_{t-2})}\epsilon_{t-3}+\cdots+\sqrt{\alpha_{t-2}\cdots\alpha_{2}(1-\alpha_1)}\epsilon_0}{\sqrt{1-\alpha_{t-1}\cdots\alpha_1}}.
+\end{gather*} From the arguments in 1 we know that both $\epsilon_{t-1}$, $\epsilon$ and $\epsilon'$ are Gaussian variable with mean 0 and variance $\I$. Thus, we have
+\[
+q(x_{t-1}|x_t,x_0)=\frac{1}{(2\pi)^{\frac{n}{2}}}\exp\left(\frac{1}{2}\left(\frac{||x_t-\sqrt{\bar{\alpha_t}}x_0||^2}{1-\bar{\alpha_t}}-\frac{||x_t-\sqrt{\alpha_t}x_{t-1}||^2}{1-\alpha_t}-\frac{||x_{t-1}-\sqrt{\overline{\alpha_{t-1}}}x_0||^2}{1-{\overline{\alpha_{t-1}}}}\right)\right).
+\] This is a Gaussian distribution with respect to $x_{t-1}$, and its mean is given by
+\begin{align*}
+\tilde{\mu_t}&=\frac{\frac{2\sqrt{\alpha_t}}{1-\alpha_t}x_t+\frac{2\sqrt{\overline{\alpha_{t-1}}}}{1-\overline{\alpha_{t-1}}}x_0}{2\left(\frac{\alpha_t}{1-\alpha_t}+\frac{1}{1-\overline{\alpha_{t-1}}}\right)}\\
+&=\frac{\sqrt{\alpha_t}(1-\frac{\bar{\alpha_t}}{\alpha_t})x_t+(1-\alpha_t)\cdot \sqrt{\frac{\bar{\alpha_t}}{\alpha_t}}x_0}{1-\bar{\alpha_t}}\\
+&=\frac{(\alpha_t-{\bar{\alpha_t}})x_t+(1-\alpha_t)\cdot (-\sqrt{1-\bar{\alpha_t}}\epsilon+x_t)}{\sqrt{\alpha_t}(1-\bar{\alpha_t})}\\
+&=\frac{1}{\sqrt{\alpha_t}}\left(x_t-\frac{1-\alpha_t}{\sqrt{1-\overline{\alpha_t}}}\epsilon\right).
+\end{align*}
+
+\paragraph*{3.}
+For the first inequality, we have 
+\begin{align*}
+\E_{q(x_{0:T})}\left[\log \frac{q(x_{1:T}|x_0)}{p_\theta(x_{0:T})}\right]&=\sum_{x_0}q(x_0)\sum_{x_{1:T}}q(x_{1:T}|x_0)\log \frac{q(x_{1:T}|x_0)}{p_\theta(x_{0:T})}\\
+&=\sum_{x_0}q(x_0)\left(\sum_{x_{1:T}}q(x_{1:T}|x_0)\log \frac{q(x_{1:T}|x_0)}{p_\theta(x_{1:T}|x_0)}-\log p_\theta(x_0)\right)\\
+&\ge \sum_{x_0}q(x_0)(-\log p_\theta(x_0))\\
+&=-\E_{q(x_0)}[\log p_\theta(x_0)].
+\end{align*}
+
+For the second equality, we have:
+\begin{align*}
+&\quad\text{RHS$-$LHS}\\
+&=\E_{q}\Bigg[\sum_{x_T}q(x_T|x_0)\log \frac{q(x_T|x_0)}{p_\theta(x_T)}+\sum_{t=2}^T \sum_{x_{t-1}}q(x_{t-1}|x_t,x_0)\log \frac{q(x_{t-1}|x_t,x_0)}{p_\theta(x_{t-1}|x_t)}-\log p_{\theta}(x_0|x_1)\\
+&\qquad -\log \frac{q(x_{1:T}|x_0)}{p_\theta(x_{0:T})}\Bigg]\\
+&=\E_{q}\Bigg[\sum_{x_T}q(x_T|x_0)\log \frac{q(x_T|x_0)}{p_\theta(x_T)}+\sum_{x_{T-1}}q(x_{T-1}|x_T,x_0)\log \frac{q(x_{T-1}|x_T,x_0)}{p_\theta(x_{T-1}|x_T)}\\
+&\qquad +\sum_{x_{T-2}}q(x_{T-2}|x_{T-1},x_0)\log \frac{q(x_{T-2}|x_T,x_0)}{p_\theta(x_{T-2}|x_{T-1})}+\cdots+\sum_{x_{1}}q(x_{1}|x_2,x_0)\log \frac{q(x_{1}|x_2,x_0)}{p_\theta(x_{1}|x_2)}\\
+&\qquad -\log p_{\theta}(x_0|x_1)-\log \frac{q(x_T|x_0)q(x_{T-1}|x_T,x_0)\cdots q(x_1|x_2,x_0)}{p_\theta(x_T)p_\theta(x_{T-1}|x_T)\cdots p_\theta(x_0|x_1)}\Bigg]\\
+&=\sum_{x_T,x_0}q(x_T,x_0)\log \frac{q(x_T|x_0)}{p_\theta(x_T)}+\sum_{x_{T-1},x_T,x_0}q(x_{T-1},x_T,x_0)\log \frac{q(x_{T-1}|x_T,x_0)}{p_\theta(x_{T-1}|x_T)}\\
+&\qquad +\sum_{x_{T-2},x_{T-1},x_0}q(x_{T-2},x_{T-1},x_0)\log \frac{q(x_{T-2}|x_T,x_0)}{p_\theta(x_{T-2}|x_{T-1})}+\cdots+\sum_{x_{1},x_2,x_0}q(x_{1}|x_2,x_0)\log \frac{q(x_{1},x_2,x_0)}{p_\theta(x_{1}|x_2)}\\
+&\qquad -\bigg(\sum_{x_T,x_0}q(x_T,x_0)\log \frac{q(x_T|x_0)}{p_\theta(x_T)}+\sum_{x_{T-1},x_T,x_0}q(x_{T-1},x_T,x_0)\log \frac{q(x_{T-1}|x_T,x_0)}{p_\theta(x_{T-1}|x_T)}+\cdots\\
+&\qquad +\sum_{x_1,x_2,x_0}q(x_1,x_2,x_0)\log \frac{q(x_{1}|x_2,x_0)}{p_\theta(x_{1}|x_2)}\bigg)=0,
+\end{align*} so we are done.
+\paragraph*{4.}
+We plug in the expression of $\tilde{\mu_t}$ and $\mu_\theta$ to get
+\begin{align*}
+L_t&=\frac{1}{2||\Sigma_\theta||_2^2}\E_{x_0,\epsilon}\left[\left|\left|\frac{1}{\sqrt{\alpha_t}}\left(x_t-\frac{1-\alpha_t}{\sqrt{1-\overline{\alpha_t}}}\epsilon\right)-\frac{1}{\sqrt{\alpha_t}}\left(x_t-\frac{1-\alpha_t}{\sqrt{1-\bar{\alpha_t}}}\epsilon_\theta(x_t,x)\right)\right|\right|^2\right]\\
+&=\frac{1}{2||\Sigma_\theta||_2^2}\cdot \frac{(1-\alpha_t)^2}{\alpha_t(1-\bar{\alpha_t})}\E_{x_0,\epsilon}\left[\left|\left|\epsilon_\theta(x_t,x)-\epsilon\right|\right|^2\right].
+\end{align*} Now, using that $x_t=\sqrt{\bar{\alpha_t}}x_{0}+\sqrt{1-\bar{\alpha_t}}\epsilon$, we are done.
+
+\section*{Problem 3}
+We begin from the second expression:
+\begin{align*}
+&\quad \E_{x\sim p_{\text{data}}(x),\tilde{x}\sim q_\sigma(\tilde{x}|x)}[\nabla_{\tilde{x}}\log q_\sigma(\tilde{x}|x)^Ts_{\theta}(\tilde{x})]\\
+&=\iint p_{\text{data}}(x)q_\sigma(\tilde{x}|x)\nabla_{\tilde{x}}\log q_\sigma(\tilde{x}|x)^Ts_{\theta}(\tilde{x})d\tilde{x}dx\\
+&=\iint p_{\text{data}}(x)\nabla_{\tilde{x}} q_\sigma(\tilde{x}|x)^Ts_{\theta}(\tilde{x})d\tilde{x}dx\\
+&=\iint p_{\text{data}}(x)\nabla_{\tilde{x}} \left(\frac{q_{\sigma}(\tilde{x},x)}{p_{\text{data}}(x)}\right)^Ts_{\theta}(\tilde{x})d\tilde{x}dx\\
+&=\iint \nabla_{\tilde{x}} \left({q_{\sigma}(\tilde{x},x)}\right)^Ts_{\theta}(\tilde{x})d\tilde{x}dx\\
+&=\int q_\sigma(\tilde{x})\nabla_{\tilde{x}}\log q_\sigma(\tilde{x})^Ts_{\theta}(\tilde{x})d\tilde{x}.
+\end{align*} Thus, we are done.
+
+
+\section*{Problem 4}
+In the diffusion process, we have
+\[
+x_t=\sqrt{\bar{\alpha_t}}x_0+\sqrt{1-\bar{\alpha_t}}\epsilon,\epsilon\sim \mathcal{N}(0,\I),
+\]
+and our model aims to estimate
+\[
+\epsilon \approx \epsilon_\theta(x_t,t).
+\]
+On the other hand, the score-based model gives
+\[
+s_\theta(x_t,t)\approx \nabla\log p(x_t),	
+\]
+so what we need is to relate $\epsilon$ with $\nabla \log p(x_t)$. We first show a lemma.
+
+\paragraph*{Lemma (Tweedie's formula).} Let $\sigma$ be a fixed value and $\theta$ be drawn from $p(\theta)$. Next, we pick several $\theta_1,\cdots,\theta_n$ and randomly draw $x_i$ from each $\theta_i$ such that
+\[
+p(x|\theta)\sim \mathcal{N}(\theta, \sigma^2).
+\]
+Then, we claim that
+\[
+\E_\theta[\theta|x]=x+\sigma^2\frac{d}{dx}\log p(x).
+\]
+\paragraph*{Proof.} We can prove it using the definition.
+\begin{align*}
+\E_\theta[\theta|x]&=\int \theta p(\theta|x)d\theta\\
+&=\int \theta \frac{p(x|\theta)p(\theta)}{p(x)}d\theta\\
+&=\frac{1}{p(x)}\int \theta \frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{1}{2\sigma^2}(x-\theta)^2}p(\theta)d\theta\\
+&=\frac{1}{p(x)}\left(x\int p(x|\theta)p(\theta)d\theta+\int \sigma^2\frac{d}{dx}\left(\frac{1}{\sqrt{2\pi}\sigma}e^{-\frac{1}{2\sigma^2}(x-\theta)^2}\right)p(\theta)d\theta\right)\\
+&=\frac{1}{p(x)}\left(x\int p(x|\theta)p(\theta)d\theta+\int \sigma^2\frac{d}{dx}\left(p(x|\theta)\right)p(\theta)d\theta\right)\\
+&=x+\sigma^2\frac{d}{dx}\log p(x).
+\end{align*}
+
+Now, using the \textbf{Lemma}, we can yield
+\[
+\sqrt{\bar{\alpha_t}}x_0\approx x_t+(1-\bar{\alpha_t})\nabla \log p(x_t),
+\] where the approximate sign means that the right-hand side is the mean value (i.e. the best estimation) of $x_0$ given that we only know $x_t$. Thus, we can also use the gradient to estimate the noise:
+\[
+\epsilon_\theta(x_t,t)=\epsilon=-{\sqrt{1-\bar{\alpha_t}}}\nabla \log p(x_t).	
+\]
+Thus, the relation between the DDPM model and the score function is
+\[
+s_\theta(x_t,t)=-\frac{1}{\sqrt{1-\bar{\alpha_t}}}\epsilon_\theta(x_t,t).
+\]
+
+\bibliographystyle{unsrt}
+\end{document}

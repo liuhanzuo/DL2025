@@ -1,0 +1,144 @@
+% Modified based on Xiaoming Sun's template and https://www.overleaf.com/latex/templates/cs6780-assignment-template/hgjyygbykvrf
+
+\documentclass[a4 paper,12pt]{article}
+\usepackage[inner=2.0cm,outer=2.0cm,top=2.0cm,bottom=2.0cm]{geometry}
+\linespread{1.1}
+\usepackage{setspace}
+\usepackage[rgb]{xcolor}
+\usepackage{verbatim}
+\usepackage{subcaption}
+\usepackage{fancyhdr}
+\usepackage{fullpage}
+\usepackage[colorlinks=true, urlcolor=blue, linkcolor=blue, citecolor=blue]{hyperref}
+\usepackage{booktabs}
+\usepackage{amsmath,amsfonts,amsthm,amssymb}
+\usepackage[shortlabels]{enumitem}
+\usepackage{setspace}
+\usepackage{extramarks}
+\usepackage{soul,color}
+\usepackage{graphicx,float,wrapfig}
+\newcommand{\homework}[3]{
+	\pagestyle{myheadings}
+	\thispagestyle{plain}
+	\newpage
+	\setcounter{page}{1}
+	\noindent
+	\begin{center}
+		\framebox{
+			\vbox{\vspace{2mm}
+				\hbox to 6.28in { {\bf Deep Learning \hfill} {\hfill {\rm #2} {\rm #3}} }
+				\vspace{4mm}
+				\hbox to 6.28in { {\Large \hfill #1  \hfill} }
+				\vspace{3mm}}
+		}
+	\end{center}
+	\vspace*{4mm}
+}
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+\usepackage[english]{babel}
+%Includes "References" in the table of contents
+\usepackage[nottoc]{tocbibind}
+\begin{document}
+	\homework{Homework 2}{2023040163}{Zhao Han Hong}
+	\section*{1 True or False Questions}
+	\section*{Problem 1}
+
+	True.
+	\section*{Problem 2}
+
+	True.
+\newcommand*{\E}[0]{\mathbb{E}}
+\newcommand*{\p}[0]{\mathbb{P}}
+	\section*{2 Q \& A}
+\newcommand*{\norm}[1]{\left|\left|#1\right|\right|}
+	\section*{Problem 3}
+\paragraph*{(1)}
+For noisy images, we can (i) set all neurons into the given values and then (ii) run evolution until convergence to get the reconstructed image.
+
+For the masked images, we can (i) set the neurons corresponding to the given parts of the image into the given values, then (ii) run the evolution process with \textbf{the given neurons fixed} until convergence to get the image.
+\paragraph*{(2)}
+Let the matrix $Y$ be such that $Y_{ij}=(y_i)_j$, then since $y_i$ are orthogonal, we know that $Y$ is an orthogonal matrix. Thus, we have
+\begin{align*}
+W_{ij}=\frac{1}{N}\sum_{p=1}^{N}(y_p)_i(y_p)_j=\frac{1}{N}(Y^TY)_{ij}=\frac{1}{N}\delta_{ij}.
+\end{align*} This implies that for any $y$, the energy is
+\[
+E=-\frac{1}{2}y^TWy=-\frac{1}{2N}y^Ty=-\frac{1}{2},
+\] so all patterns are memorized.
+
+\section*{Problem 4}
+The gradient is
+\begin{align*}
+\nabla_W L(W)&=-\frac{1}{|P|}\sum_{v\in P}\frac{\nabla_W\p(v)}{\p(v)}\\
+&=-\frac{1}{|P|}\sum_{v\in P}\frac{1}{\p(v)}\sum_h \p(v,h)(\nabla_W \log \p(v,h))\\
+&=-\frac{1}{|P|}\sum_{v\in P}\frac{1}{\p(v)}\sum_h \p(v,h)\left(yy^T-\frac{\sum_{y'}\exp(y'^TWy')y'y'^T}{\sum_{y'}\exp(y'^TWy')}\right)\\
+&=-\frac{1}{|P|}\sum_{v\in P}\left(\E_{h|v}[yy^T]-\sum_{y'}\frac{\exp(y'^TWy')}{\sum_{y''}\exp(y''^TWy'')}y'y'^T\right)\\
+&=-\frac{1}{|P|}\sum_{v\in P}\left(\E_{h|v}[yy^T]-\E_{y'}[y'y'^T]\right),
+\end{align*} so we are done.
+\newcommand*{\mo}[1]{\left|\left|#1\right|\right|}
+\section*{Problem 5}
+\paragraph*{(1)}
+We have the conditional distribution being
+\begin{align*}
+\p(v|h)&=\frac{\p(v,h)}{\int_v \p(v,h)dv}\\
+&=\frac{\exp(-\frac{1}{2}(v-b)^T(v-b)+(v-b)^TWh)}{\int_v \exp(-\frac{1}{2}(v-b)^T(v-b)+(v-b)^TWh)dv}.
+\end{align*}
+Now, we let $x=v-b$, $c=Wh$ and do the integration:
+\begin{align*}
+\int\exp\left(-\frac{1}{2}x^Tx+x^Tc\right)dx&=\int\int\cdots\int \exp\left(-\frac{1}{2}\sum_{i=1}^{N_v} x_i^2+\sum_{i=1}^{N_v} x_ic_i\right)dx_1dx_2\cdots dx_n\\
+&=\exp\left(\frac{1}{2}\sum_{i=1}^{{N_v}}c_i^2\right)\cdot (2\pi)^{\frac{{N_v}}{2}}.
+\end{align*} Thus, we have
+\begin{align*}
+\p(v|h)&=(2\pi)^{-\frac{N_v}{2}}\exp\left(-\frac{1}{2}h^TW^TWh-\frac{1}{2}(v-b)^T(v-b)+(v-b)^TWh\right)\\
+&=(2\pi)^{-\frac{N_v}{2}}\exp\left(-\frac{1}{2}\mo{v-b-Wh}^2\right).
+\end{align*}
+\paragraph*{(2)}
+The loss function is
+\begin{align*}
+L(b)&=-\frac{1}{|P|}\sum_{v\in P}\log \left(\sum_h \p(v,h)\right)\\
+&=-\frac{1}{|P|}\sum_{v\in P}\log\left(\frac{1}{Z}\sum_{h}\exp\left(-\frac{1}{2}(v-b)^T(v-b)+v^TWh\right)\right)\\
+&=-\frac{1}{|P|}\sum_{v\in P}\log\left(\sum_{h}\exp\left(-\frac{1}{2}(v-b)^T(v-b)+v^TWh\right)\right)+\log Z
+\end{align*} 
+
+
+Then we can compute the gradient:
+\begin{align*}
+\nabla_bL(b)&=-\frac{1}{|P|}\sum_{v\in P}\frac{\sum_h\exp\left(-\frac{1}{2}(v-b)^T(v-b)+v^TWh\right)(v-b)}{\sum_h\exp\left(-\frac{1}{2}(v-b)^T(v-b)+v^TWh\right)}\\ &\quad +\frac{\sum_{v,h}\exp(-\frac{1}{2}(v-b)^T(v-b)+v^TWh)(v-b)}{Z}\\
+&=-\frac{1}{|P|}\sum_{v\in P}(v-b)+\E_{v,h} [v-b]\\
+&=-\frac{1}{|P|}\sum_{v\in P}v+\E_{v,h} [v]\\
+\end{align*}
+\section*{Problem 6}
+\paragraph*{(1)}
+No. Suppose that the probability distribution is given such that each adjacent neuron must have the same values, then we must have $D=A=E=F$ for the joint probability $\p(D,F)$ to be nonzero. Thus, $D$ and $F$ must not be independent.
+%We can first find that
+% \begin{align*}
+% \p(D,F)&=\frac{1}{Z}	\int_{ABCE}f_{AD}(A,D)f_{AC}(A,C)f_{AE}(A,E)f_{BC}(B,C)f_{EF}(E,F)dAdBdCdE\\
+% &=\frac{1}{Z}\int_{AE}g(A)f_{AD}(A,D)f_{AE}(A,E)f_{EF}(E,F)dAdE,
+% \end{align*} where $g(A)$ is a function of $A$.
+% Next,
+% \begin{align*}
+% \p(D)&=\frac{1}{Z}\int_{AEF}g(A)f_{AD}(A,D)f_{AE}(A,E)f_{EF}(E,F)dAdEdF\\
+% &=\frac{1}{Z}\int_{A}g(A)h(A)f_{AD}(A,D)dA,
+% \end{align*}
+% and 
+% \begin{align*}
+% \p(F)&=\frac{1}{Z}\int_{ADE}g(A)f_{AD}(A,D)f_{AE}(A,E)f_{EF}(E,F)dAdDdE\\
+% &=\frac{1}{Z}\int_{E}k(E)f_{EF}(E,F)dE,
+% \end{align*} where $h(A),k(E)$ are functions of $A,E$, respectively. Thus, we can see that $\p(D, F)\neq \p(D)\p(F)$ in general.
+\paragraph*{(2)}
+Yes. Ignoring the normalizing factor, we have
+\begin{align*}
+\p(B,E|A)&=\frac{1}{Z}	\int_{CDF}f_{AD}(A,D)f_{AC}(A,C)f_{AE}(A,E)f_{BC}(B,C)f_{EF}(E,F)dCdDdF\\
+&=\frac{1}{Z}f_{AE}(A,E)l(A,B)m(A)h(E),
+\end{align*} where $m,h$ are functions only depending on $A,E$, respectively; $l$ is a function of $A,B$. We then find that $B$ and $E$ are independent given $A$.
+\paragraph*{(3)}
+We have
+\[
+\log \p(A,B,C,D,E,F)=-\mathcal{E}(A,B,C,D,E,F)+C_2,	
+\] where $C_2$ is a constant independent of $A,B,...,F$. Thus, we can have
+\begin{align*}
+&\mathcal{E}(A,B,C,D,E,F)\\
+&=C_1-\log f_{AD}(A,D)-\log f_{AC}(A,C)-\log f_{AE}(A,E)-\log f_{BC}(B,C)-\log f_{EF}(E,F)\\
+&=\mathcal{E}_{AD}(A,D)+\mathcal{E}_{AC}(A,C)+\mathcal{E}_{AE}(A,E)+\mathcal{E}_{BC}(B,C)+\mathcal{E}_{EF}(E,F).
+\end{align*}
+\bibliographystyle{unsrt}
+\end{document} 

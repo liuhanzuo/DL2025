@@ -1,0 +1,76 @@
+% Modified based on Xiaoming Sun's template and https://www.overleaf.com/latex/templates/cs6780-assignment-template/hgjyygbykvrf
+
+\documentclass[a4 paper,12pt]{article}
+\usepackage[inner=2.0cm,outer=2.0cm,top=2.0cm,bottom=2.0cm]{geometry}
+\linespread{1.1}
+\usepackage{setspace}
+\usepackage[rgb]{xcolor}
+\usepackage{verbatim}
+\usepackage{subcaption}
+\usepackage{fancyhdr}
+\usepackage{fullpage}
+\usepackage[colorlinks=true, urlcolor=blue, linkcolor=blue, citecolor=blue]{hyperref}
+\usepackage{booktabs}
+\usepackage{amsmath,amsfonts,amsthm,amssymb}
+\usepackage[shortlabels]{enumitem}
+\usepackage{setspace}
+\usepackage{extramarks}
+\usepackage{soul,color}
+\usepackage{algorithmic}
+\usepackage{graphicx,float,wrapfig}
+\newcommand{\homework}[3]{
+	\pagestyle{myheadings}
+	\thispagestyle{plain}
+	\newpage
+	\setcounter{page}{1}
+	\noindent
+	\begin{center}
+		\framebox{
+			\vbox{\vspace{2mm}
+				\hbox to 6.28in { {\bf Deep Learning \hfill} {\hfill {\rm #2} {\rm #3}} }
+				\vspace{4mm}
+				\hbox to 6.28in { {\Large \hfill #1  \hfill} }
+				\vspace{3mm}}
+		}
+	\end{center}
+	\vspace*{4mm}
+}
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+\usepackage[english]{babel}
+%Includes "References" in the table of contents
+\usepackage[nottoc]{tocbibind}
+\begin{document}
+	\homework{Homework 6}{2023040163}{Zhao Han Hong}
+\section*{Homework 6.1}
+\paragraph*{Problem 1}
+We can directly calculate
+\begin{align*}
+\lim _{k\to \infty}\nabla L_{\text{NCE}}^{(k)}(\theta;h)&=\lim_{k\to \infty}\Bigg[\sum_w \tilde{p}_{w|h}(w|h)\left(\frac{1}{u^{\theta}(w,h)}-\frac{1}{u^{\theta}(w,h)+kq_{\tilde{w}}(w)}\right)\cdot \nabla  u^{\theta}(w,h)\\
+&\qquad +\sum_{1\leq i\le k,\bar{w}}q_{\tilde{w}}(\bar{w})\left(-\frac{1}{kq_{\tilde{w}}(\bar{w})}\right)\cdot \nabla u^{\theta}(\bar{w},h)\Bigg]\\
+&=\sum_w \tilde{p}_{w|h}(w|h)\left(\frac{1}{u^{\theta}(w,h)}\right)\cdot \nabla  u^{\theta}(w,h)-\sum_{\bar{w}}\nabla u^{\theta}(\bar{w},h)\\
+&\approx \sum_w \left(\tilde{p}_{w|h}(w|h)-p^{\theta}_{w|h}(w|h)\right)\nabla \log u^{\theta}(w,h),
+\end{align*} where the final step uses the fact that the partion function $Z$ is approximated to 1.
+\section*{Homework 6.2}
+
+\section*{Problem 1}
+\paragraph*{1.} It is the self-attention and cross-attention parts, since the attention calculation has complexity $O(n^2)$, where $n$ is the input sequence length.
+
+\paragraph*{2.} The paper proposes to split the sequence into segments. Then, attention is only fully calculated within the segment; however, the hidden states in the previous segment is added in as a context without gradient. The training pseudo-code can be shown as below:
+\begin{algorithmic}[1]
+\STATE Split the sequence into segments
+\FOR{each layer number $n$}
+\FOR{each segment number $t$}
+\STATE Concatenate the hidden states of the previous segment (but without gradient) $\text{NoGrad}({h_{t-1}^{(n-1)}})$ with the current segment's hidden state $h_t^{(n-1)}$
+\STATE Calculate the attention query based on solely $h_t^{n-1}$, but calculate the key and value based on the concatenated hidden states.
+\STATE Use attention mechanism to calculate the output $h_t^{(n)}$, which is the hidden state of the current segment at layer $n$.
+\ENDFOR
+\ENDFOR
+\end{algorithmic}
+
+\section*{Problem 2}
+For the sentiment analysis task, we should use BERT, since it is a pretrained transformer encoder. BERT can extract features of the text bidirectionaly, so it can perform better on the task. For fine-tuning, we should add a MLP projection head on the top of the output hidden states of BERT and try to learn the sentiment from the output. 
+
+For the closed-book question answering task, we should use GPT-2. GPT-2 is a pretrained transformer decoder, which can generate text based on the context. For the fine-tuning, we can use the context as the input and the question as the output, and train the model on the corpus just as training a autoregressive language model.
+
+\bibliographystyle{unsrt}
+\end{document}

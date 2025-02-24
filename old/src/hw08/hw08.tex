@@ -1,0 +1,104 @@
+% Modified based on Xiaoming Sun's template and https://www.overleaf.com/latex/templates/cs6780-assignment-template/hgjyygbykvrf
+
+\documentclass[a4 paper,12pt]{article}
+\usepackage[inner=2.0cm,outer=2.0cm,top=2.0cm,bottom=2.0cm]{geometry}
+\linespread{1.1}
+\usepackage{setspace}
+\usepackage[rgb]{xcolor}
+\usepackage{verbatim}
+\usepackage{subcaption}
+\usepackage{fancyhdr}
+\usepackage{fullpage}
+\usepackage[colorlinks=true, urlcolor=blue, linkcolor=blue, citecolor=blue]{hyperref}
+\usepackage{booktabs}
+\usepackage{amsmath,amsfonts,amsthm,amssymb}
+\usepackage[shortlabels]{enumitem}
+\usepackage{setspace}
+\usepackage{extramarks}
+\usepackage{soul,color}
+\usepackage{graphicx,float,wrapfig}
+\newcommand{\homework}[3]{
+	\pagestyle{myheadings}
+	\thispagestyle{plain}
+	\newpage
+	\setcounter{page}{1}
+	\noindent
+	\begin{center}
+		\framebox{
+			\vbox{\vspace{2mm}
+				\hbox to 6.28in { {\bf Deep Learning \hfill} {\hfill {\rm #2} {\rm #3}} }
+				\vspace{4mm}
+				\hbox to 6.28in { {\Large \hfill #1  \hfill} }
+				\vspace{3mm}}
+		}
+	\end{center}
+	\vspace*{4mm}
+}
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+\usepackage[english]{babel}
+%Includes "References" in the table of contents
+\usepackage[nottoc]{tocbibind}
+\newcommand*{\norm}[1]{\left|\left|#1\right|\right|}
+\newcommand*{\E}[0]{\mathbb{E}}\newcommand*{\p}[0]{\mathbb{P}}
+\begin{document}
+	\homework{Homework 8}{2023040163}{Zhao Han Hong}
+
+\section*{Problem 1}
+Without loss of generality, we can only consider the probability of $\Pr(k=1)$.
+
+We first find the probability of $\epsilon_i<c$:
+\[
+\Pr(\epsilon_i<c)=\int_{-\infty}^{c}\exp(-\epsilon_i-e^{-\epsilon_i})d\epsilon_i=e^{-e^{-\epsilon_i}}|^c_{-\infty}=	e^{-e^{-c}}.
+\]
+Thus, we have
+\begin{align*}
+\Pr(k=0)&=\int_{-\infty}^\infty e^{-\epsilon_0-e^{-\epsilon_0}}d\epsilon_0\cdot e^{-e^{-(\epsilon_0+x_0-x_1)}}\cdots e^{-e^{-(\epsilon_0+x_0-x_{K-1})}}\\
+&=\int_0^{\infty}\exp(-t-e^{x_1-x_0}t-\cdots-e^{x_K-x_0}t)dt\\
+&=\frac{e^{x_0}}{e^{x_0}+\cdots+e^{x_{K-1}}},
+\end{align*} so we are done.
+
+\section*{Problem 2}
+
+\paragraph*{1.}We can use the position-aware GNN. This method picks a set of vertices called the ``anchor set''. Each time, we generate the message based on both the features and the position information w.r.t. the anchor set (for example, the shortest path to each vertex in the set). This can solve the problem since, for example, if the anchor set on the second graph is chosen as the right-down corner, then the shortest distance of $B$ to the corner is 2, which can't be achieved in the first graph.
+
+\paragraph*{2.} This can solve the more general problem. However, we have to assume that the choose of the anchor set is random, and we also may need to choose $K>1$ anchor sets. The expressiveness power of the model is clearly stronger than GNN, since it includes additional information.
+
+The protential limitations of this method is on the cost of calculating the shortest path, which may be expensive if the anchor set $S$ is large.
+
+\section*{Problem 3}
+\paragraph*{1.}
+We have a encoder from the graph to the hidden state $Z$, which can be chosen as Gaussian Distribution
+\[
+q(Z|X;\phi)\sim \mathcal{N}(\mu(X;\phi),\exp (\text{diag}(\sigma(X;\phi)))I),
+\]
+where $\mu(X;\phi)$ and $\Sigma(X;\phi)$ can be learned by a Graph Convolutional Network; the probability distribution from the hidden state $Z$ and the adjacent matrix $A$ to the features $X$ can be also chosen as a Gaussian Distribution 
+\[
+p(X|A,Z;\theta)\sim \mathcal{N}(f(Z;\theta),I),
+\]
+where $f(Z;\theta)$ can be a Graph Convolutional Network. Moreover, the prior $p(Z)$ can be chosen as the isotropic Gaussian distribution $\mathcal{N}(0,I)$. 
+
+Given a hidden variable $Z$, we first generate the adjacent matrix $A$ based on $Z$, for which we can just use
+\[
+\Pr(A_{ij}=1|Z)=\Pr(v_i\sim v_j|Z)=\sigma(z_i^Tz_j).
+\]
+Next, the generation of the node features $X$ from the hidden state $Z$ can directly done by sampling from $p(X|A,Z;\theta)$.
+
+For training, we should also maximize ELBO:
+\[
+J(\theta;\phi)=\E_{q(Z|A,X;\phi)}[\log p(A,X|Z;\theta)]-\text{KL}(q(Z|A,X;\phi)||p(Z)),
+\] where each part can be calculated just as in the ordinary VAE.
+
+\paragraph*{2.}
+
+For these cases, we can use the proposed GraphRNN to finish the generation task. Specifically, we can encode a graph into a sequence of vectors $v_i$, namely,
+\[
+v_i=(\mathbf{1}[1\in N(i)],\mathbf{1}[2\in N(i)],\cdots,\mathbf{1}[{i-1}\in N(i)]).
+\]
+
+There are two RNNs in this model: the \textbf{graph-level RNN} generate hidden states $h_i$. From the hidden states, we then decide whether to end the generation or not. For each $h_i$, we generate the sequence $v_i$, which determins the adjacent matrix, from another RNN called the \textbf{edge-level RNN}. The feature matrix can be also generated from the hidden states output by the {graph-level RNN} hidden state.
+
+For training, we first encode the graph into a sequence of vectors $v_i$ and then train the RNN on the sequence. The loss function should contain both of the loss of the generated vectors $v_i'$ and the feature matrix.
+
+
+\bibliographystyle{unsrt}
+\end{document}

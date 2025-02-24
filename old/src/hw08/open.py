@@ -1,0 +1,1 @@
+print(open('./1 2').read())
