@@ -1,158 +1,8 @@
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
-class ConcatBlock(nn.Module):
-    def __init__(self, channels, kernel_sizes):
-        self.conv = []
-        for i in range(kernel_sizes):
-            self.conv.append(nn.Conv2d(channels, channels, kernel_sizes[i], padding=(kernel_sizes[i]-1)//2))
-        self.conv = nn.ModuleList(self.conv)
-        self.bn = nn.BatchNorm2d(channels)
-    def forward(self, x):
-        for i in range(len(self.conv)):
-            x = F.tanh(x + self.conv[i](x))
-        return self.bn(x)
+
 class Expert(nn.Module):
-    def createManyResBlock(self, channels=64, BlockNum=3, kernel_size=3):
-        self.cnt += 1
-        manyResBlock = []
-        for i in range(BlockNum):
-            x = nn.Sequential(
-                nn.Conv2d(channels, channels, kernel_size, padding=(kernel_size-1)//2),
-                nn.BatchNorm2d(channels),
-                nn.Tanh(),
-                # nn.Dropout2d(0.1),
-                nn.Conv2d(channels, channels, kernel_size, padding=(kernel_size-1)//2),
-            )
-            self.add_module(f'{self.cnt}_{i}', x)
-            manyResBlock.append(x)
-        return manyResBlock
-    
-    def PassThrough(self, manyResBlock: list, x):
-        for i in range(len(manyResBlock)):
-            x = F.tanh(x + manyResBlock[i](x))
-            # if i % 2:
-                # x = nn.MaxPool2d(2)(x)
-        return x
-
-    def __init__(self):
-        super(Expert, self).__init__()
-        self.cnt = 0
-
-        self.conv1 = nn.Sequential(
-            nn.Conv2d(3, 64, 7, padding=3),
-            nn.BatchNorm2d(64),
-            nn.MaxPool2d(2),
-            nn.Dropout2d(0.25)
-        )
-        self.manyResBlock11 = self.createManyResBlock(
-            BlockNum=4, kernel_size=7
-        )
-        self.manyResBlock12 = self.createManyResBlock(
-            BlockNum=4, kernel_size=5
-        )
-        self.manyResBlock13 = self.createManyResBlock(
-            BlockNum=4, kernel_size=3
-        )
-        self.conv2 = nn.Sequential(
-            nn.Conv2d(64 * 3, 128, 3, stride=2, padding=1),
-            nn.BatchNorm2d(128),
-            nn.MaxPool2d(2),
-            nn.Dropout2d(0.25)
-        )
-        self.manyResBlock21 = self.createManyResBlock(channels=128, kernel_size=7)
-        self.manyResBlock22 = self.createManyResBlock(channels=128, kernel_size=5)
-        self.manyResBlock23 = self.createManyResBlock(channels=128, kernel_size=3)
-        self.conv3 = nn.Sequential(
-            nn.Conv2d(128 * 3, 128, 5, padding=2),
-            nn.BatchNorm2d(128),
-            nn.MaxPool2d(2),
-            nn.Dropout2d(0.25)
-        )
-        self.manyResBlock32 = self.createManyResBlock(channels=128, kernel_size=5)
-        self.manyResBlock33 = self.createManyResBlock(channels=128, kernel_size=3)
-        self.conv4 = nn.Sequential(
-            nn.Conv2d(128 * 2, 128, 3, padding=1),
-            nn.BatchNorm2d(128),
-            # nn.MaxPool2d(2),
-            nn.Dropout2d(0.25)
-        )
-        self.manyResBlock42 = self.createManyResBlock(channels=128, kernel_size=5)
-        self.manyResBlock43 = self.createManyResBlock(channels=128, kernel_size=3)
-        self.conv5 = nn.Sequential(
-            nn.Conv2d(128 * 2, 64, 3, padding=1),
-            nn.BatchNorm2d(64),
-            nn.MaxPool2d(2),
-            nn.Dropout2d(0.25)
-        )
-
-    def forward(self, x):
-        bsize = x.shape[0]
-        x = self.pre_process(x)
-        # print the device of the tensor
-        # print(x.device)
-        x = self.conv1(x)
-        # print('after conv1', x.shape)
-        x1 = self.PassThrough(self.manyResBlock11, x)
-        x2 = self.PassThrough(self.manyResBlock12, x)
-        x3 = self.PassThrough(self.manyResBlock13, x)
-        x = torch.cat([x1, x2, x3], dim=1)
-
-        # print('after block 1', x.shape)
-        x = self.conv2(x)
-        # print('after conv2', x.shape)
-        x1 = self.PassThrough(self.manyResBlock21, x)
-        x2 = self.PassThrough(self.manyResBlock22, x)
-        x3 = self.PassThrough(self.manyResBlock23, x)
-        x = torch.cat([x1, x2, x3], dim=1)
-        # print('after block 2', x.shape)
-        x = self.conv3(x)
-        # print('after conv3', x.shape)
-        x2 = self.PassThrough(self.manyResBlock32, x)
-        x3 = self.PassThrough(self.manyResBlock33, x)
-        x = torch.cat([x2, x3], dim=1)
-        # print('after block 3', x.shape)
-        x = self.conv4(x)
-        # print('after conv4', x.shape)
-        x2 = self.PassThrough(self.manyResBlock42, x)
-        x3 = self.PassThrough(self.manyResBlock43, x)
-        x = torch.cat([x2, x3], dim=1)
-        x = self.conv5(x)
-        # print('after block 4', x.shape)
-        x = nn.AvgPool2d(4)(x)
-        y = x.reshape(bsize, -1)
-        return y
-
-    def to(self, device):
-        lst1 = [
-            self.conv1,
-            self.conv2,
-            self.conv3,
-            self.conv4,
-            self.conv5,
-        ]
-        for i in lst1:
-            i.to(device)
-        lst = [
-            self.manyResBlock11,
-            self.manyResBlock12,
-            self.manyResBlock13,
-            self.manyResBlock21,
-            self.manyResBlock22,
-            self.manyResBlock23,
-            self.manyResBlock32,
-            self.manyResBlock33,
-            self.manyResBlock42,
-            self.manyResBlock43
-        ]
-        for i in lst:
-            for j in i:
-                j.to(device)
-
-    def pre_process(self, x):
-        return x.float()
-
-class InitialExpert(nn.Module):
     def createManyResBlock(self, channels=64, BlockNum=3, kernel_size=3):
         self.cnt += 1
         manyResBlock = []
@@ -176,7 +26,7 @@ class InitialExpert(nn.Module):
         return x
 
     def __init__(self):
-        super(InitialExpert, self).__init__()
+        super(Expert, self).__init__()
         self.cnt = 0
 
         self.conv1 = nn.Sequential(
@@ -185,25 +35,34 @@ class InitialExpert(nn.Module):
             nn.MaxPool2d(2),
             nn.Dropout2d(0.25)
         )
-        self.manyResBlock1 = self.createManyResBlock(
-            BlockNum=4
+        self.manyResBlock11 = self.createManyResBlock(
+            channels=64, kernel_size=5
+        )
+        self.manyResBlock12 = self.createManyResBlock(
+            channels=64, kernel_size=3
         )
         self.conv2 = nn.Sequential(
-            nn.Conv2d(64, 128, 3, stride=2, padding=1),
+            nn.Conv2d(64 * 2, 128, 3, stride=2, padding=1),
             nn.BatchNorm2d(128),
             nn.MaxPool2d(2),
             nn.Dropout2d(0.25)
         )
-        self.manyResBlock2 = self.createManyResBlock(channels=128)
+        self.manyResBlock21 = self.createManyResBlock(
+            channels=128, kernel_size=5
+        )
+        self.manyResBlock22 = self.createManyResBlock(
+            channels=128, kernel_size=3
+        )
         self.conv3 = nn.Sequential(
-            nn.Conv2d(128, 128, 3, padding=1),
+            nn.Conv2d(128 * 2, 128, 5, padding=2),
             nn.BatchNorm2d(128),
             nn.MaxPool2d(2),
             nn.Dropout2d(0.25)
         )
-        self.manyResBlock3 = self.createManyResBlock(channels=128)
+        self.manyResBlock31 = self.createManyResBlock(channels=128, kernel_size=5)
+        self.manyResBlock32 = self.createManyResBlock(channels=128, kernel_size=3)
         self.conv4 = nn.Sequential(
-            nn.Conv2d(128, 64, 5, padding=2),
+            nn.Conv2d(128 * 2, 64, 3, padding=1),
             nn.BatchNorm2d(64),
             nn.MaxPool2d(2),
             nn.Dropout2d(0.25)
@@ -219,19 +78,25 @@ class InitialExpert(nn.Module):
         x = self.conv1(x)
         # x has shape [bsize, 64, 64, 64]
         # print('after conv1', x.shape)
-        x = self.PassThrough(self.manyResBlock1, x)
+        x1 = self.PassThrough(self.manyResBlock11, x)
+        x2 = self.PassThrough(self.manyResBlock12, x)
+        x = torch.cat([x1, x2], dim=1)
         # x has shape [bsize, 64, 64, 64]
         # print('after block 1', x.shape)
         x = self.conv2(x)
         # x has shape [bsize, 128, 32, 32]
         # print('after conv2', x.shape)
-        x = self.PassThrough(self.manyResBlock2, x)
+        x1 = self.PassThrough(self.manyResBlock21, x)
+        x2 = self.PassThrough(self.manyResBlock22, x)
+        x = torch.cat([x1, x2], dim=1)
         # x has shape [bsize, 128, 32, 32]
         # print('after block 2', x.shape)
         x = self.conv3(x)
         # x has shape [bsize, 128, 16, 16]
         # print('after conv3', x.shape)
-        x = self.PassThrough(self.manyResBlock3, x)
+        x1 = self.PassThrough(self.manyResBlock31, x)
+        x2 = self.PassThrough(self.manyResBlock32, x)
+        x = torch.cat([x1, x2], dim=1)
         # x has shape [bsize, 128, 16, 16]
         # print('after block 3', x.shape)
         x = self.conv4(x)
@@ -253,9 +118,12 @@ class InitialExpert(nn.Module):
         for i in lst1:
             i.to(device)
         lst = [
-            self.manyResBlock1,
-            self.manyResBlock2,
-            self.manyResBlock3,
+            self.manyResBlock11,
+            self.manyResBlock12,
+            self.manyResBlock21,
+            self.manyResBlock22,
+            self.manyResBlock31,
+            self.manyResBlock32,
             self.manyResBlock4
         ]
         for i in lst:
