@@ -1,11 +1,9 @@
 CodingProject2/cifar_10_4x/
-CodingProject2/checkpoint/
-CodingProject2/checkpoint_/
-CodingProject2/checkpoint_omoe0.1/
-CodingProject2/checkpoint_omoe0.5/
-CodingProject2/checkpoint_omoe1.0/
-CodingProject2/checkpoint_dropout0.1/
+CodingProject2/checkpoint_nodropout0.1/
 CodingProject2/checkpoint_dropout0.1_/
 CodingProject2/checkpoint_dropout0.5/
+CodingProject2/checkpoint_dropout0.1_new/
+CodingProject2/checkpoint_vgg0.1/
+CodingProject2/checkpoint_deep0.1/
 CodingProject2/wandb/
 CodingProject2/results/

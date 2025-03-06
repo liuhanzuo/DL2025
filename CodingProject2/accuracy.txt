@@ -1,0 +1,1 @@
+D:\DL\CodingProject2\checkpoint_deep0.1: 92.68D:\DL\CodingProject2\checkpoint_dropout0.1_: 94.37D:\DL\CodingProject2\checkpoint_dropout0.1_new: 94.01D:\DL\CodingProject2\checkpoint_dropout0.5: 93.87D:\DL\CodingProject2\checkpoint_vgg0.1: 93.33

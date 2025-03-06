@@ -41,28 +41,39 @@ class Net(nn.Module):
             channels=64, kernel_size=3
         )
         self.conv2 = nn.Sequential(
-            nn.Conv2d(64 * 2, 128, 3, stride=2, padding=1),
-            nn.BatchNorm2d(128),
+            nn.Conv2d(128, 64, 3, stride=2, padding=1),
+            nn.BatchNorm2d(64),
             nn.MaxPool2d(2),
             nn.Dropout2d(0.25)
         )
-        self.manyResBlock2 = self.createManyResBlock(
-            channels=128, kernel_size=3, BlockNum=5
+        self.manyResBlock21 = self.createManyResBlock(
+            channels=64, kernel_size=5, BlockNum=5
+        )
+        self.manyResBlock22 = self.createManyResBlock(
+            channels=64, kernel_size=3, BlockNum=5
         )
         self.conv3 = nn.Sequential(
-            nn.Conv2d(128, 128, 5, padding=2),
-            nn.BatchNorm2d(128),
+            nn.Conv2d(128, 64, 5, padding=2),
+            nn.BatchNorm2d(64),
             nn.MaxPool2d(2),
             nn.Dropout2d(0.25)
         )
-        self.manyResBlock3 = self.createManyResBlock(channels=128, kernel_size=3, BlockNum=5)
+        self.manyResBlock31 = self.createManyResBlock(channels=64, kernel_size=5)
+        self.manyResBlock32 = self.createManyResBlock(channels=64, kernel_size=3)
         self.conv4 = nn.Sequential(
             nn.Conv2d(128, 64, 3, padding=1),
             nn.BatchNorm2d(64),
             nn.MaxPool2d(2),
             nn.Dropout2d(0.25)
         )
-        self.manyResBlock4 = self.createManyResBlock(channels=64)
+        self.manyResBlock41 = self.createManyResBlock(channels=64, kernel_size=5, BlockNum=5)
+        self.manyResBlock42 = self.createManyResBlock(channels=64, kernel_size=3, BlockNum=5)
+        self.conv5 = nn.Sequential(
+            nn.Conv2d(128, 64, 3, padding=1),
+            nn.BatchNorm2d(64),
+            nn.MaxPool2d(2),
+            nn.Dropout2d(0.25)
+        )
         self.final = nn.Sequential(
             nn.Linear(64,256),
             nn.BatchNorm1d(256),
@@ -84,29 +95,40 @@ class Net(nn.Module):
         x = self.conv1(x)
         # x has shape [bsize, 64, 64, 64]
         # print('after conv1', x.shape)
-        x1 = self.PassThrough(self.manyResBlock11, x)
-        x2 = self.PassThrough(self.manyResBlock12, x)
+        x1 = self.PassThrough(self.manyResBlock11, x) + x
+        x2 = self.PassThrough(self.manyResBlock12, x) + x
         x = torch.cat([x1, x2], dim=1)
         # x has shape [bsize, 64, 64, 64]
         # print('after block 1', x.shape)
         x = self.conv2(x)
         # x has shape [bsize, 128, 32, 32]
         # print('after conv2', x.shape)
-        x = self.PassThrough(self.manyResBlock2, x)
+        x1 = self.PassThrough(self.manyResBlock21, x) + x
+        x2 = self.PassThrough(self.manyResBlock22, x) + x
+        x = torch.cat([x1, x2], dim=1)
         # x has shape [bsize, 128, 32, 32]
         # print('after block 2', x.shape)
         x = self.conv3(x)
         # x has shape [bsize, 128, 16, 16]
         # print('after conv3', x.shape)
-        x = self.PassThrough(self.manyResBlock3, x)
+        x1 = self.PassThrough(self.manyResBlock31, x) + x
+        x2 = self.PassThrough(self.manyResBlock32, x) + x
+        x = torch.cat([x1, x2], dim=1)
         # x has shape [bsize, 128, 16, 16]
         # print('after block 3', x.shape)
         x = self.conv4(x)
         # x has shape [bsize, 64, 8, 8]
         # print('after conv4', x.shape)
-        x = self.PassThrough(self.manyResBlock4, x)
+        x1 = self.PassThrough(self.manyResBlock41, x) + x
+        x2 = self.PassThrough(self.manyResBlock42, x) + x
+        x = torch.cat([x1, x2], dim=1)
+        # x has shape [bsize, 64, 8, 8]
         # print('after block 4', x.shape)
-        x = nn.AvgPool2d(4)(x)
+        x= self.conv5(x)
+        # x has shape [bsize, 64, 4, 4]
+        # print('after conv5', x.shape)
+        x = F.adaptive_avg_pool2d(x, (1, 1))
+        # x has shape [bsize, 64, 1, 1]
         y = x.reshape(bsize, -1)
         y = self.final(y)
         return y
@@ -117,6 +139,7 @@ class Net(nn.Module):
             self.conv2,
             self.conv3,
             self.conv4,
+            self.conv5,
             self.final
         ]
         for i in lst1:
@@ -124,9 +147,12 @@ class Net(nn.Module):
         lst = [
             self.manyResBlock11,
             self.manyResBlock12,
-            self.manyResBlock2,
-            self.manyResBlock3,
-            self.manyResBlock4
+            self.manyResBlock21,
+            self.manyResBlock22,
+            self.manyResBlock31,
+            self.manyResBlock32,
+            self.manyResBlock41,
+            self.manyResBlock42
         ]
         for i in lst:
             for j in i:
