@@ -19,7 +19,7 @@ def evaluation(net, dataLoader, device):
     with torch.no_grad():
         for data in tqdm.tqdm(dataLoader, desc="Evaluating", leave=False):
             images, labels = data[0].to(device), data[1].to(device)
-            outputs, _, _ = net(images)
+            outputs = net(images)
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
@@ -32,8 +32,10 @@ if __name__ == "__main__":
     bsz = 128
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # net = Net().to(device)
-    net = torch.load(os.path.join(base_dir, "checkpoint/cifar10_4x_best.pth"), weights_only=False)
-    # print(net)
+    model_dir = os.path.join(base_dir, "checkpoint_vgg0.1")
+    net = torch.load(os.path.join(model_dir, "cifar10_4x_best.pth"), weights_only=False)
+    print("number of trained parameters: %d" % (
+    sum([param.nelement() for param in net.parameters() if param.requires_grad])))
     print("number of trained parameters: %d" %
           (sum([param.nelement() for param in net.parameters() if param.requires_grad])))
     print("number of total parameters: %d" % (sum([param.nelement() for param in net.parameters()])))
@@ -43,5 +45,10 @@ if __name__ == "__main__":
         testset = CIFAR10_4x(root=base_dir, split='valid', transform=transform)
         print("can't load test set because {}, load valid set now".format(e))
     testloader = torch.utils.data.DataLoader(testset, batch_size=bsz, shuffle=False, num_workers=2)
-
-    evaluation(net, testloader, device)
+    acc = 0
+    for i in range(10) :
+        acc += evaluation(net, testloader, device)
+    acc/=10
+    print(f"Average accuracy: {acc:.2f}%")
+    with open(os.path.join(base_dir, "accuracy.txt"), "a") as f:
+        f.write(f"{model_dir}: {acc:.2f}")

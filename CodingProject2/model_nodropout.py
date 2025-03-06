@@ -10,7 +10,6 @@ class Net(nn.Module):
                 nn.Conv2d(channels, channels, kernel_size, padding=(kernel_size-1)//2),
                 nn.BatchNorm2d(channels),
                 nn.SiLU(),
-                nn.Dropout2d(0.15 if channels < 128 else 0.25),
                 nn.Conv2d(channels, channels, kernel_size, padding=(kernel_size-1)//2),
             )
             self.add_module(f'{self.cnt}_{i}', x)
@@ -20,8 +19,6 @@ class Net(nn.Module):
     def PassThrough(self, manyResBlock: list, x):
         for i in range(len(manyResBlock)):
             x = F.mish(x + manyResBlock[i](x))
-            if i % 2:
-                x = nn.Dropout2d(0.1)(x)
         return x
 
     def __init__(self):
@@ -32,7 +29,6 @@ class Net(nn.Module):
             nn.Conv2d(3, 64, 7, padding=3),
             nn.BatchNorm2d(64),
             nn.MaxPool2d(2),
-            nn.Dropout2d(0.15)
         )
         self.manyResBlock11 = self.createManyResBlock(
             channels=64, kernel_size=5
@@ -44,7 +40,6 @@ class Net(nn.Module):
             nn.Conv2d(64 * 2, 128, 3, stride=2, padding=1),
             nn.BatchNorm2d(128),
             nn.MaxPool2d(2),
-            nn.Dropout2d(0.25)
         )
         self.manyResBlock2 = self.createManyResBlock(
             channels=128, kernel_size=3, BlockNum=5
@@ -53,14 +48,12 @@ class Net(nn.Module):
             nn.Conv2d(128, 128, 5, padding=2),
             nn.BatchNorm2d(128),
             nn.MaxPool2d(2),
-            nn.Dropout2d(0.25)
         )
         self.manyResBlock3 = self.createManyResBlock(channels=128, kernel_size=3, BlockNum=5)
         self.conv4 = nn.Sequential(
             nn.Conv2d(128, 64, 3, padding=1),
             nn.BatchNorm2d(64),
             nn.MaxPool2d(2),
-            nn.Dropout2d(0.25)
         )
         self.manyResBlock4 = self.createManyResBlock(channels=64)
         self.final = nn.Sequential(
