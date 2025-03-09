@@ -4,4 +4,5 @@ model_dir:D:\DL\CodingProject2\checkpoint_dropout0.1_new, train acc: 97.99, val 
 model_dir:D:\DL\CodingProject2\checkpoint_dropout0.5, train acc: 96.96, val acc: 94.03
 model_dir:D:\DL\CodingProject2\checkpoint_nodropout0.1, train acc: 99.93, val acc: 94.99
 model_dir:D:\DL\CodingProject2\checkpoint_vgg0.1, train acc: 99.58, val acc: 93.33
-
+model_dir:D:\DL\CodingProject2\checkpoint_nodropout_, train acc: 99.92, val acc: 95.19
+model_dir:D:\DL\CodingProject2\checkpoint_nodropout_new0.1, train acc: 99.97, val acc: 95.93

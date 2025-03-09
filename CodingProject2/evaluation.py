@@ -32,10 +32,11 @@ if __name__ == "__main__":
     bsz = 128
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     # net = Net().to(device)
-    dirs = ["checkpoint_nodropout_", "checkpoint_nodropout_new0.1"]
+    dirs = ["checkpoint_nodropout_new0.1"]
     # model_dir = os.path.join(base_dir, "checkpoint_nodropout0.1")
     for dir_ in dirs:
         model_dir = os.path.join(base_dir, dir_)
+        os.system(' '.join(['du', '-h', os.path.join(model_dir, 'cifar10_4x_best.pth')]))
         net = torch.load(os.path.join(model_dir, "cifar10_4x_best.pth"), weights_only=False)
         print("number of trained parameters: %d" % (
         sum([param.nelement() for param in net.parameters() if param.requires_grad])))
@@ -53,5 +54,6 @@ if __name__ == "__main__":
         train_acc = evaluation(net, torch.utils.data.DataLoader(trainset, batch_size=bsz, shuffle=False, num_workers=2),
                                device)
         print(f"train acc: {train_acc:.2f}, val acc: {val_acc:.2f}")
+        
         with open(os.path.join(base_dir, "accuracy.txt"), "a") as f:
             f.write(f"model_dir:{model_dir}, train acc: {train_acc:.2f}, val acc: {val_acc:.2f}\n")
