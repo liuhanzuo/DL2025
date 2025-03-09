@@ -1,1 +1,6 @@
-D:\DL\CodingProject2\checkpoint_deep0.1: 92.68D:\DL\CodingProject2\checkpoint_dropout0.1_: 94.37D:\DL\CodingProject2\checkpoint_dropout0.1_new: 94.01D:\DL\CodingProject2\checkpoint_dropout0.5: 93.87D:\DL\CodingProject2\checkpoint_vgg0.1: 93.33
+model_dir:D:\DL\CodingProject2\checkpoint_deep0.1, train acc: 95.80, val acc: 92.59
+model_dir:D:\DL\CodingProject2\checkpoint_dropout0.1_, train acc: 97.78, val acc: 94.42
+model_dir:D:\DL\CodingProject2\checkpoint_dropout0.1_new, train acc: 97.99, val acc: 93.90
+model_dir:D:\DL\CodingProject2\checkpoint_dropout0.5, train acc: 96.96, val acc: 94.03
+model_dir:D:\DL\CodingProject2\checkpoint_nodropout0.1, train acc: 99.93, val acc: 94.99
+model_dir:D:\DL\CodingProject2\checkpoint_vgg0.1, train acc: 99.58, val acc: 93.33
