@@ -3,6 +3,8 @@ CodingProject2/checkpoint_nodropout0.1/
 CodingProject2/checkpoint_dropout0.1_/
 CodingProject2/checkpoint_dropout0.5/
 CodingProject2/checkpoint_dropout0.1_new/
+CodingProject2/checkpoint_nodropout_/
+CodingProject2/checkpoint_nodropout_new0.1/
 CodingProject2/checkpoint_vgg0.1/
 CodingProject2/checkpoint_deep0.1/
 CodingProject2/wandb/
