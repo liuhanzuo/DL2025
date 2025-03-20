@@ -92,7 +92,8 @@ However, this structure does not works well due to limited model size. Thus I ch
     x\to y=\text{cat}[res1(x),res2(x)]
 \]
 To describe it simply, the model's width also means much when the model's size is limited.\\
-Moreover, I use a linear layer for last several layer's result (such as project them to a 32/64-dimension space), after concat them, we finally use a linear layer to get the final result. After checking this idea in CNN-relative papers, I find out that this idea is similar to ResNeXt, which improve the model's performance for about 1\%.
+Moreover, I use a linear layer for last several layer's result (such as project them to a 32/64-dimension space), after concat them, we finally use a linear layer to get the final result. After checking this idea in CNN-relative papers, I find out that this idea is similar to ResNeXt, which improve the model's performance for about 1\%.\\
+Finally, I change the structure of residual connection: instead of using residual connection between each two layers, I put the sum of all previous layers' result to the final layer. This structure is similar to DenseNet, which could extract each range of features in the photo. (the specific structure is showed afterwards)\\
 \paragraph{Data Augmentation}:
 The following data augmentation techniques were applied during training to improve the model's robustness and performance:
 \begin{itemize}
@@ -132,6 +133,31 @@ def PassThrough(self, manyResBlock: list, x):
             x = nn.Dropout2d(0.1)(x)
     return x
 \end{verbatim}
+\paragraph{ResBlock-Modified}
+\begin{verbatim}
+    def createManyResBlock(self, channels=64, BlockNum=3, kernel_size=3):
+    self.cnt += 1
+    manyResBlock = []
+    for i in range(BlockNum):
+        x = nn.Sequential(
+            nn.Conv2d(channels, channels, kernel_size, padding=(kernel_size-1)//2),
+            nn.BatchNorm2d(channels),
+            nn.SiLU(),
+            nn.Conv2d(channels, channels, kernel_size, padding=(kernel_size-1)//2),
+        )
+        self.add_module(f'{self.cnt}_{i}', x)
+        manyResBlock.append(x)
+    return manyResBlock
+
+def PassThrough(self, manyResBlock: list, x):
+    sequence = [ x ]
+    for i in range(len(manyResBlock)):
+        for j in range(i):
+            x = F.mish(x + sequence[j])
+        x = F.mish(x + manyResBlock[i](x))
+        sequence.append(x)
+    return x
+\end{verbatim}
 Here we show the ResBlock structure. The ResBlock is a basic block in the model. It is a combination of two convolution layers, with a BatchNorm layer and a SiLU activation layer. The dropout layer is added after the first. In the model architecture, we only change the hyperparameter in the function.
 \paragraph{Model Architecture}
 Notation: In the following graph, here are some definitions.
@@ -140,65 +166,109 @@ Notation: In the following graph, here are some definitions.
     \item bn: block number, dr: dropout rate
     \item Concat: Concatenate the two inputs, ResConnect: enumerate before, pass the input through Resblocks consequently.
 \end{enumerate}
-\begin{longtable}{|c|c|c|c|c|c|}
+\begin{longtable}{|c|c|c|c|c|}
     \caption{Model Architecture Layers} \label{tab:model_architecture} \\
     \hline
-    \textbf{Layers} & \textbf{Basic Configs} & \textbf{Vgg} & \textbf{Deep} & \textbf{Dropout} & \textbf{NoDropout} \\
+    \textbf{Layers} & \textbf{Basic Configs} & \textbf{Deep} & \textbf{Dropout} & \textbf{NoDropout-concat} \\
     \hline
     \endfirsthead
-    \multicolumn{6}{c}{{\bfseries \tablename\ \thetable{} -- continued from previous page}} \\
+    \multicolumn{5}{c}{{\bfseries \tablename\ \thetable{} -- continued from previous page}} \\
     \hline
-    \textbf{Layers} & \textbf{Basic Configs} & \textbf{Vgg} & \textbf{Deep} & \textbf{Dropout} & \textbf{NoDropout} \\
+    \textbf{Layers} & \textbf{Basic Configs} & \textbf{Deep} & \textbf{Dropout} & \textbf{NoDropout} \\
     \hline
     \endhead
-    \hline \multicolumn{6}{|r|}{{Continued on next page}} \\ \hline
+    \hline \multicolumn{5}{|r|}{{Continued on next page}} \\ \hline
     \endfoot
     \hline
     \endlastfoot
-    Conv1 & inc=3, outc=64, ks=7, ps=3  & & & & \\
-    BatchNorm & c=64 & & & & \\
-    Maxpool & ks=2 & & & & \\
-    Dropout & dr=0.15 & & & & dr=0.0\\
+    Conv1 & inc=3, outc=64, ks=7, ps=3  & & & \\
+    BatchNorm & c=64 & & & \\
+    Maxpool & ks=2 & & & \\
+    Dropout & dr=0.15 & & & dr=0.0\\
     \hline
-    ResBlock11 & c=64, ks=3, bn=3 & x & & & \\
-    ResBlock12 & c=64, ks=5, bn=3 & x & ks=3 & & \\
-    Connection & & x & ResConnect & Concat & Concat\\
+    ResBlock11 & c=64, ks=3, bn=3 & & & \\
+    ResBlock12 & c=64, ks=5, bn=3 & ks=3 & & \\
+    Connection & & ResConnect & Concat & Concat\\
     \hline
-    Conv2 & inc=outc=128, ks=3, ps=1, s=2 & & & & \\      
-    BatchNorm & c=128 & & & & \\
-    Maxpool & ks=2 & & & & \\
-    Dropout & dr=0.25 & & & & dr=0.0\\
+    Conv2 & inc=outc=128, ks=3, ps=1, s=2 & & & \\      
+    BatchNorm & c=128 & & & \\
+    Maxpool & ks=2 & & & \\
+    Dropout & dr=0.25 & & & dr=0.0\\
     \hline
-    ResBlock2 & c=128, ks=3, bn=5 & & & & \\
+    ResBlock2 & c=128, ks=3, bn=5 & & & \\
     \hline
-    Conv3 & inc=128, outc=128, ks=5, ps=2 & & & & \\
-    BatchNorm & c=128 & & & & \\
-    Maxpool & ks=2 & & & & \\
-    Dropout & dr=0.25 & & & & dr=0.0\\
+    Conv3 & inc=128, outc=128, ks=5, ps=2 & & & \\
+    BatchNorm & c=128 & & & \\
+    Maxpool & ks=2 & & & \\
+    Dropout & dr=0.25 & & & dr=0.0\\
+    Linear1 & outc=32 & x & x & \\
     \hline
-    ResBlock3 & c=128, ks=3, ps=1 & & & & \\
+    ResBlock3 & c=128, ks=3, ps=1 & & & \\
+    Linear2 & outc=32 & x & x & \\
     \hline
-    Conv4 & inc=128, outc=64, ks=3, ps=1 & & & & \\
-    BatchNorm & c=64 & & & & \\
-    Maxpool & ks=2 & & & & \\
-    Dropout & dr=0.25 & & & & dr=0.0\\
+    Conv4 & inc=128, outc=64, ks=3, ps=1 & & & \\
+    BatchNorm & c=64 & & & \\
+    Maxpool & ks=2 & & & \\
+    Dropout & dr=0.25 & & & dr=0.0\\
+    Linear3 & outc=64 & x & x & \\
     \hline
-    ResBlock41 & c=64, ks=3, ps=1 & & & & \\
+    ResBlock4 & c=64, ks=3, ps=1 & & & \\
+    Linear4 & outc=64 & x & x & \\
     \hline
-    Linear & inc=64, outc=256 & & & & \\
-    BatchNorm & c=256 & & & & \\
-    GELU & & & & & \\
-    Dropout & dr=0.3 & & & & \\
-    Linear & inc=256, outc=256 & & & & \\
-    BatchNorm & c=256 & & & & \\
-    GELU & & & & & \\
-    Dropout & dr=0.2 & & & & \\
-    Linear & inc=256, outc=10 & & & & \\      
+    AvgPool & ks=4 & & & \\
+    Linear5 & outc=64 & x & x & \\
+    \hline
+    Concat Linear & x & x & x & \\
+    \hline
+    Linear & inc=64, outc=256 & & & inc=256 \\
+    BatchNorm & c=256 & & & \\
+    GELU & & & & \\
+    Dropout & dr=0.3 & & & \\
+    Linear & inc=256, outc=256 & & & \\
+    BatchNorm & c=256 & & & \\
+    GELU & & & & \\
+    Dropout & dr=0.2 & & & \\
+    Linear & inc=256, outc=10 & & & \\      
     \hline
 \end{longtable}
 \section*{Training Curves}
-
-
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{train_loss.png}
+        \caption{Training Loss Curve}
+        \label{fig:train_loss}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{train_accuracy.png}
+        \caption{Training Accuracy Curve}
+        \label{fig:train_accuracy}
+    \end{minipage}
+    \vfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{valid_loss.png}
+        \caption{Validation Loss Curve}
+        \label{fig:valid_loss}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{valid_accuracy.png}
+        \caption{Validation Accuracy Curve}
+        \label{fig:valid_accuracy}
+    \end{minipage}
+\end{figure}  
+Here we show the training curves for the best model:
+\begin{enumerate}
+    \item pretraining: use a relative large learniing rate (2e-4$\to$1e-5) and mixup rate=0.1 to train the model
+    \item finetuning1: use a relative small learning rate (1e-5$\to$5e-6) and mixup rate=0.2 to train the model
+    \item finetuning2: use a relative small learning rate (5e-6$\to$1e-6) and mixup rate=0.5 to train the model
+    \item finetuning3: use a relative small learning rate (5e-6$\to$1e-6) and mixup rate=0.3 to train the model
+\end{enumerate}
 \section*{Appendix}
 In this report, I will mainly enumerate about three model structures(also introducing some failure examples) and list their result datas.
 \begin{figure}[H]
@@ -219,8 +289,8 @@ In this report, I will mainly enumerate about three model structures(also introd
             ymin=90, ymax=100,
             legend style={at={(0.5,-0.15)}, anchor=north, legend columns=-1},
             ]
-            \addplot coordinates {(Deep0.1, 95.80) (Vgg0.1, 99.58) (Dropout0.5, 96.96) (Dropout0.1, 97.78)  (Nodropout0.1, 99.93) (Nodropout-concat, 99.99)};
-            \addplot coordinates {(Deep0.1, 92.59) (Vgg0.1, 93.33) (Dropout0.5, 94.03) (Dropout0.1, 94.42)   (Nodropout0.1, 94.99)};
+            \addplot coordinates {(Deep0.1, 95.80) (Vgg0.1, 99.58) (Dropout0.5, 96.96) (Dropout0.1, 97.78)  (Nodropout0.1, 99.93) (Nodropout-concat, 99.97)};
+            \addplot coordinates {(Deep0.1, 92.59) (Vgg0.1, 93.33) (Dropout0.5, 94.03) (Dropout0.1, 94.42)   (Nodropout0.1, 94.99) (Nodropout-concat, 95.93)};
             \legend{Training Accuracy, Validation Accuracy}
         \end{axis}
     \end{tikzpicture}
@@ -243,6 +313,7 @@ After implementing this coding project, some experience is gained:
     \item The model's size is limited, thus the model's width also means much.
     \item Some tricks (such as no dropout after BatchNorm, etc.) should be considered.
     \item for a model that is not deep enough, residual connection does not have a significant improvement. However, it indeed increase the model's performance, and make the training progress more stable.
+    \item concatenation for last several layers are essential, making the model extract each range of features in the photo.
 \end{itemize}
-Afterall, the model's best performance on valid set is \textbf{94.99\%}.
+Afterall, the model's best performance on valid set is \textbf{95.93\%}.
 \end{document} 

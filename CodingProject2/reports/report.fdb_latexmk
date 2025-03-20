@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1741532628.64498 "d:/DL/CodingProject2/reports/report.tex" "report.pdf" "report" 1741532630.97735 0
+["pdflatex"] 1741587315.96552 "d:/DL/CodingProject2/reports/report.tex" "report.pdf" "report" 1741587322.32494 0
   "c:/texlive/2023/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1709022794 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "c:/texlive/2023/texmf-dist/fonts/map/fontname/texfonts.map" 1709023943 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "c:/texlive/2023/texmf-dist/fonts/tfm/jknappen/ec/ectt1000.tfm" 1709023474 1536 06717a2b50de47d4087ac0e6cd759455 ""
@@ -214,10 +214,14 @@
   "c:/texlive/2023/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1709029756 5518052 de2a91c664d75f3971de4662dc6b5a65 ""
   "c:/texlive/2023/texmf-var/web2c/pdftex/pdflatex.fmt" 1709029957 8220665 aeb883bac47b804e671f0c270a3632ff ""
   "c:/texlive/2023/texmf.cnf" 1709029734 713 e69b156964470283e0530f5060668171 ""
-  "d:/DL/CodingProject2/reports/report.tex" 1741532627 12311 fc5df8b45467893e56049396afced1f4 ""
-  "report.aux" 1741532630 1582 77f9020b78174375b70622b8df32d69c "pdflatex"
-  "report.out" 1741532630 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
-  "report.tex" 1741532627 12311 fc5df8b45467893e56049396afced1f4 ""
+  "d:/DL/CodingProject2/reports/report.tex" 1741587313 15321 30e3d74d2fa73c7dcdadf78d1b3e1516 ""
+  "report.aux" 1741587322 2541 94d9e4657e88f2a9f40e750bdcb06db0 "pdflatex"
+  "report.out" 1741587318 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
+  "report.tex" 1741587313 15321 30e3d74d2fa73c7dcdadf78d1b3e1516 ""
+  "train_accuracy.png" 1741586512 499930 0eb3e2629a9c3b57b69d617dd5672036 ""
+  "train_loss.png" 1741586497 546717 de874bd159762d9f59c8f7270fb9d142 ""
+  "valid_accuracy.png" 1741586486 426184 f03f5ba4f40daeb7bf513c462717f4fe ""
+  "valid_loss.png" 1741586473 559541 921ea83fc9a240a70c52459cde2ffeda ""
   (generated)
   "report.aux"
   "report.log"
