@@ -1,0 +1,229 @@
+% Modified based on Xiaoming Sun's template and https://www.overleaf.com/latex/templates/cs6780-assignment-template/hgjyygbykvrf
+
+\documentclass[a4 paper,12pt]{article}
+\usepackage[inner=2.0cm,outer=2.0cm,top=2.0cm,bottom=2.0cm]{geometry}
+\linespread{1.1}
+\usepackage{setspace}
+\usepackage[rgb]{xcolor}
+\usepackage{verbatim}
+\usepackage{subcaption}
+\usepackage{fancyhdr}
+\usepackage{fullpage}
+\usepackage[colorlinks=true, urlcolor=blue, linkcolor=blue, citecolor=blue]{hyperref}
+\usepackage{booktabs}
+\usepackage{amsmath,amsfonts,amsthm,amssymb}
+\usepackage[shortlabels]{enumitem}
+\usepackage{setspace}
+\usepackage{extramarks}
+\usepackage{soul,color}
+\usepackage{graphicx,float,wrapfig}
+\newenvironment{breakablealgorithm}
+  {% \begin{breakablealgorithm}
+   \begin{center}
+     \refstepcounter{algorithm}% New algorithm
+     \hrule height.8pt depth0pt \kern2pt% \@fs@pre for \@fs@ruled
+     \renewcommand{\caption}[2][\relax]{% Make a new \caption
+       {\raggedright\textbf{\ALG@name~\thealgorithm} ##2\par}%
+       \ifx\relax##1\relax % #1 is \relax
+         \addcontentsline{loa}{algorithm}{\protect\numberline{\thealgorithm}##2}%
+       \else % #1 is not \relax
+         \addcontentsline{loa}{algorithm}{\protect\numberline{\thealgorithm}##1}%
+       \fi
+       \kern2pt\hrule\kern2pt
+     }
+  }{% \end{breakablealgorithm}
+     \kern2pt\hrule\relax%
+   \end{center}
+  }
+\makeatother
+\newtheoremstyle{definitionstyle}
+  {3pt} % Space above
+  {3pt} % Space below
+  {\normalfont} % Body font
+  {} % Indent amount
+  {\bfseries} % Theorem head font
+  {} % Punctuation after theorem head
+  { } % Space after theorem head
+  {} % Theorem head spec (can be left empty, meaning `normal`)
+
+\theoremstyle{definitionstyle}
+\newtheorem{defn}{Definition}
+\newtheorem{thm}{Theorem}
+\newtheorem{lem}{Lemma}
+\newtheorem{statement}{Statement}
+% \newtheorem{proof}{Proof}
+\usepackage{framed}
+\newenvironment{framedminipage}
+    {\begin{framed}\begin{minipage}{0.9\textwidth}}
+    {\end{minipage}\end{framed}}
+\newcommand{\homework}[3]{
+	\pagestyle{myheadings}
+	\thispagestyle{plain}
+	\newpage
+	\setcounter{page}{1}
+	\noindent
+	\begin{center}
+		\framebox{
+			\vbox{\vspace{2mm}
+				\hbox to 6.28in { {\bf Deep Learning \hfill} {\hfill {\rm #2} {\rm #3}} }
+				\vspace{4mm}
+				\hbox to 6.28in { {\Large \hfill #1  \hfill} }
+				\vspace{3mm}}
+		}
+	\end{center}
+	\vspace*{4mm}
+}
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+
+\begin{document}
+\homework{HW4}{2024011303}{Liu Hanzuo}
+\section*{True or False}
+\paragraph{P1} False; No, we are expecting a lower FID score.
+\paragraph{P2} False; We need to update the generator and discriminator step by step, one by one.
+\section*{QA}
+\paragraph{P3}\textbf{1.}
+\[
+    JSD(p\|q)=\frac 1 2\left(KL(p||\frac{p+q}{2})+KL(q||\frac{p+q}{2})\right)
+\]
+\[
+    =\frac 1 2 \left(\sum_x p(x)\log\frac{p(x)}{\frac{p(x)+q(x)}{2}}+\sum_x q(x)\log\frac{q(x)}{\frac{p(x)+q(x)}{2}}\right)
+\]
+\[
+    =\frac 1 2 \left(-\sum_x (p(x)+q(x))\log \frac{p(x)+q(x)}{2}+\sum_x p(x)\log p(x)+\sum_x q(x)\log q(x)\right)
+\]
+\[
+    =-H(p+q)+\frac{1}{2}(H(p)+H(q))
+\]
+\textbf{2.} Note that $H(x)$ is convex, thus the zero side of the inequality holds.
+\[
+    JSD(p\|q)=\frac 1 2 \left(\sum_x p(x)\log\frac{p(x)}{\frac{p(x)+q(x)}{2}}+\sum_x q(x)\log\frac{q(x)}{\frac{p(x)+q(x)}{2}}\right)
+\]
+\[
+    \le \frac 1 2\left(\sum_x p(x)\log 2+\sum_x q(x)\log 2\right)\le log 2
+\]
+Thus we have proved two side of the inequality.\\
+\textbf{3.}
+\begin{framedminipage}
+\begin{thm}
+\[
+    \sqrt{\mathbb{E}_{x\sim p}[f(x)^2]}+\sqrt{\mathbb{E}_{x\sim p}[g(x)^2]}\ge \sqrt{\mathbb{E}_{x\sim p}[f(x)+g(x)]^2}
+\]
+\end{thm}
+\end{framedminipage}
+\begin{proof}
+Square two side of the inequality, we only need to show that
+\[
+    \sqrt{\mathbb{E}_{x\sim p}[f(x)^2]}\sqrt{\mathbb{E}_{x\sim p}[q(x)^2]}\ge \mathbb{E}_{x\sim p}[f(x)g(x)]
+\]
+Note that from Cauchy-Schwarz inequality, we have
+\[
+    \sum_x p(x)f(x)^2\sum_x p(x)g(x)^2\ge \left(\sum_x p(x)f(x)g(x)\right)^2
+\]
+Which indicate that
+\[
+    \mathbb{E}_{x\sim p}[f(x)^2]\mathbb{E}_{x\sim p}[g(x)^2]\ge \left(\mathbb{E}_{x\sim p}[f(x)g(x)]\right)^2
+\]
+Bring this inequality back to the initial statement and we have proved the theorem.
+\end{proof}
+Now we go back to the proof of initial statement.\\
+We note that $a=p_1(x),b=p_2(x),c=p_3(x)$, from the theorem we proved(also note that the element under square is a non-negative number thus do not need to consider whether it is largher than 0 or not), we only need that:
+\[
+  \sqrt{\log b+\frac a b\log a-\frac{a+b} b\log\frac{a+b}{2}}+\sqrt{\log b+\frac c b\log c-\frac{b+c} b\log\frac{b+c}{2}}
+\]
+\[
+  \ge \sqrt{\frac a b \log a+\frac c b \log c-\frac{a+c} b\log\frac{a+c}{2}}
+\]
+sqaure two side and we deduce the problem to 
+\[
+  \left(\log\frac{a+b}{2b}+\log\frac{b+c}{2b}+\frac a b \log\frac{a+b}{a+c}+\frac c b\log\frac{b+c}{a+c}\right)
+\]
+\[
+  \le 2\sqrt{\log b+\frac a b\log a-\frac{a+b} b\log\frac{a+b}{2}}\sqrt{\log b+\frac c b\log c-\frac{b+c} b\log\frac{b+c}{2}}
+\]
+let $x=\frac{a+b}{2b},y=\frac{c+b}{2b}$, we can rewrite the inequality as
+\[
+  \left(\log x+\log y+(2x-1)\log\frac{x}{x+y-1}+(2y-1)\log\frac{y}{x+y-1}\right)^2
+\]
+\[
+  \le 4\left((2x-1)\log{(2x-1)}-2x\log x\right)\left((2y-1)\log{(2y-1)-2y\log y}\right)
+\]
+derivate two part, we can gain the condition that the inequation has its local minimum from Lagrange multiplier(here if $x=1$ or $y=1$ then we already prove the inequality, thus we assume they are not equal to 1 to make the derivative meaningful)
+\[
+  \log\frac{x}{x+y-1}\left(\log x+\log y+(2x-1)\log\frac{x}{x+y-1}+(2y-1)\log\frac{y}{x+y-1}\right)
+\]
+\[
+  =2\log \frac{2x-1}x\left((2y-1)\log{(2y-1)-2y\log y}\right)
+\]
+From the simlilar derivative to $y$, we combine them together and gain that:
+\[
+  \frac {\log x-\log(x+y-1)}{\log y-\log(x+y-1)}=\frac{f(x)}{f(y)}\numberthis
+\]
+\[
+  f(x)=\frac{\log(2x-1)-\log x}{(2x-1)\log(2x-1)-2x\log x}
+\]
+Note that 
+\[
+  f'(x)<0(x\ge 1)
+\]
+bring this back to the eqution 1, we have that with $x$ increasing, LHS increase while RHS decrease, thus the solution of $x$ is unique. Since $x=1$ is a solution, thus the only solution is $x=1$, which shows that the only local minimum of this inequation is at $x=y=1$.\\
+Thus, the initial statement is proved.
+\paragraph{P4}\textbf{1.} Note that from Kantorovich-Rubinstein duality, we have
+\[
+  W(p,q)=\sup_{\|f\|_L\le 1}\|\mathbb{E}_{x\sim p}[f(x)]-\mathbb{E}_{x\sim q}[f(x)]\|
+\]
+thus for any $f$ that $\|f\|_L\le 1$, we have
+\[
+  W(p,r)+W(r,q)\ge \|\mathbb{E}_{x\sim p}[f(x)]-\mathbb{E}_{x\sim r}[f(x)]\|+\|\mathbb{E}_{x\sim r}[f(x)]-\mathbb{E}_{x\sim q}[f(x)]\|
+\]
+\[
+  \ge \|\mathbb{E}_{x\sim p}[f(x)]-\mathbb{E}_{x\sim q}[f(x)]\|
+\]
+thus $W(p,r)+W(r,q)\ge W(p,q)$\\
+\textbf{2.} Note that from Cauchy-Schwarz inequality, we have
+\[
+  W(p_x,p_{x+\epsilon})\le\mathbb{E}_{x\sim p_x,\epsilon\sim N(0,\sigma^2 I)}\|x-(x+\epsilon)\|_2
+\]
+\[
+  =\mathbb{E}[\|\epsilon\|_2]\le\sqrt{\mathbb{E}[\|\epsilon\|_2^2]}=\sqrt{V}
+\]
+\textbf{3.}
+\begin{framedminipage}
+\begin{lem}
+Pinsker's inequality: for any two probability distribution $p,q$, we have
+\[
+  \delta(p,q)\le\sqrt{\frac 1 2 D_{KL}(p\|q)}
+\]
+\end{lem}
+\end{framedminipage}
+\begin{proof}
+let $A=\{x|p(x)>q(x)\}$, then $\delta(p,q)=\sup_U\|p(U)-q(U)\|=p(A)-q(A)$
+\[
+  D_{KL}(p\|q)=\sum_x p(x)\log\frac{p(x)}{q(x)}\ge\sum_x p(x)(1-\frac{q(x)}{p(x)})=p(A)-q(A)=\delta(p,q)
+\]
+\end{proof}
+From the conclusion we proved in 1, we have
+\[
+  W(p_r,p_q)\le W(p_r,p_{r+\epsilon})+W(p_{r+\epsilon},p_{q+\epsilon})+W(p_{q+\epsilon},p_q)
+\]
+From the conclusion we proved in 2, we have
+\[
+  W(p_r,p_{r+\epsilon})\le\sqrt{V},W(p_{q},p_{q+\epsilon})\le\sqrt{V}
+\]
+And from hint 1 we have:
+\[
+  W(p_{r+\epsilon},p_{q+\epsilon})\le C\delta(p_x,p_y)\le C\sqrt{\frac 1 2 D_{KL}(p_x\|p_y)}
+\]
+Where the first inequality is gained from: any point in the support set has a variance of at most $C$, thus can be easily proved from the definition. The second inequality is gained from Pinsker's inequality(lemma).\\
+\textbf{4.}
+Here are some possible tricks for training GANs:
+\begin{itemize}
+  \item Add Gaussian Noise to the input(from 3, the Wesserstein distance is bounded by the variance of the input, thus adding noise can help to stabilize the training process)
+  \item Add a gradient penalty, since we need a $f$ that $\|f\|_L\le 1$, we can add a penalty term to the loss function to make sure that the gradient is bounded.
+\end{itemize}
+These might also cause some potential problems:
+\begin{itemize}
+  \item Add noises to the pictures might degrade the quality of the generated pictures.
+  \item If $\sigma$ is too small, the approximation that using JSD term to approximate the Wesserstein distance might not be accurate.
+  \item Unlike Wasserstein distance, JSD does not provide meaningful gradients when distributions are disjoint, leading to training instability
+\end{itemize}
+\end{document}
