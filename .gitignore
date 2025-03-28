@@ -9,3 +9,8 @@ CodingProject2/checkpoint_vgg0.1/
 CodingProject2/checkpoint_deep0.1/
 CodingProject2/wandb/
 CodingProject2/results/
+
+CodingProject3/data/
+CodingProject3/vae/
+CodingProject3/ebm/
+CodingProject3/gan/
