@@ -21,6 +21,22 @@ def save_model(save_path,
         save_dict['optimizer_d'] = optimizer_d
     torch.save(save_dict, save_path)
 
+def save_model_state_dict(save_path,
+               model_dict,
+               optimizer_dict=None,
+               replay_buffer_dict=None,
+               discriminator_dict=None,
+               optimizer_d_dict=None):
+    save_dict = {'model': model_dict}
+    if optimizer_dict is not None:
+        save_dict['optimizer'] = optimizer_dict
+    if replay_buffer_dict is not None:
+        save_dict['replay_buffer'] = replay_buffer_dict
+    if discriminator_dict is not None:
+        save_dict['discriminator'] = discriminator_dict
+    if optimizer_d_dict is not None:
+        save_dict['optimizer_d'] = optimizer_d_dict
+    torch.save(save_dict, save_path)
 
 def load_model(load_path):
     checkpoint = torch.load(load_path)
