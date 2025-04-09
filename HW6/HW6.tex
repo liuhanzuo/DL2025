@@ -1,0 +1,168 @@
+% Modified based on Xiaoming Sun's template and https://www.overleaf.com/latex/templates/cs6780-assignment-template/hgjyygbykvrf
+
+\documentclass[a4 paper,12pt]{article}
+\usepackage[inner=2.0cm,outer=2.0cm,top=2.0cm,bottom=2.0cm]{geometry}
+\linespread{1.1}
+\usepackage{setspace}
+\usepackage[rgb]{xcolor}
+\usepackage{verbatim}
+\usepackage{subcaption}
+\usepackage{fancyhdr}
+\usepackage{fullpage}
+\usepackage[colorlinks=true, urlcolor=blue, linkcolor=blue, citecolor=blue]{hyperref}
+\usepackage{booktabs}
+\usepackage{amsmath,amsfonts,amsthm,amssymb}
+\usepackage[shortlabels]{enumitem}
+\usepackage{setspace}
+\usepackage{extramarks}
+\usepackage{soul,color}
+\usepackage{graphicx,float,wrapfig}
+\newenvironment{breakablealgorithm}
+  {% \begin{breakablealgorithm}
+   \begin{center}
+     \refstepcounter{algorithm}% New algorithm
+     \hrule height.8pt depth0pt \kern2pt% \@fs@pre for \@fs@ruled
+     \renewcommand{\caption}[2][\relax]{% Make a new \caption
+       {\raggedright\textbf{\ALG@name~\thealgorithm} ##2\par}%
+       \ifx\relax##1\relax % #1 is \relax
+         \addcontentsline{loa}{algorithm}{\protect\numberline{\thealgorithm}##2}%
+       \else % #1 is not \relax
+         \addcontentsline{loa}{algorithm}{\protect\numberline{\thealgorithm}##1}%
+       \fi
+       \kern2pt\hrule\kern2pt
+     }
+  }{% \end{breakablealgorithm}
+     \kern2pt\hrule\relax%
+   \end{center}
+  }
+\makeatother
+\newtheoremstyle{definitionstyle}
+  {3pt} % Space above
+  {3pt} % Space below
+  {\normalfont} % Body font
+  {} % Indent amount
+  {\bfseries} % Theorem head font
+  {} % Punctuation after theorem head
+  { } % Space after theorem head
+  {} % Theorem head spec (can be left empty, meaning `normal`)
+
+\theoremstyle{definitionstyle}
+\newtheorem{defn}{Definition}
+\newtheorem{thm}{Theorem}
+\newtheorem{lem}{Lemma}
+\newtheorem{statement}{Statement}
+% \newtheorem{proof}{Proof}
+\usepackage{framed}
+\newenvironment{framedminipage}
+    {\begin{framed}\begin{minipage}{0.9\textwidth}}
+    {\end{minipage}\end{framed}}
+\newcommand{\homework}[3]{
+	\pagestyle{myheadings}
+	\thispagestyle{plain}
+	\newpage
+	\setcounter{page}{1}
+	\noindent
+	\begin{center}
+		\framebox{
+			\vbox{\vspace{2mm}
+				\hbox to 6.28in { {\bf Deep Learning \hfill} {\hfill {\rm #2} {\rm #3}} }
+				\vspace{4mm}
+				\hbox to 6.28in { {\Large \hfill #1  \hfill} }
+				\vspace{3mm}}
+		}
+	\end{center}
+	\vspace*{4mm}
+}
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+
+\begin{document}
+\homework{HW5}{2024011303}{Liu Hanzuo}
+\section*{Q\&A}
+\paragraph{P1}
+\[
+    L(\theta)=\mathbb{E}_{x'}[\log \hat{p}(x)]=\mathbb{E}_{u\sim Uniform([0,1)^d),x\sim p_{data}}[\log \hat{p}(x+u)]
+\]
+\[
+    =\mathbb{E}_{x\sim p_{data}}\int_{[0,1)^d}\log \hat{p}(x+u)du\le\mathbb{E}_{x\sim p_{data}}\log\int_{[0,1)^d} \hat{p}(x+u)du
+\]
+\[
+    =\mathbb{E}_{x\sim p_{data}}\log p(x)
+\]
+Note that the inequality mentioned here is from the Jenson inequality, whereas $(\log x)''=-\frac 1 {x^2}<0$, apply Jenson inequality and we get the inequality.
+\paragraph{P2}
+We prove that the transformation $T$ is invertible, while the Jacobian determinant is positive.
+\[
+    u_i=\frac{x_i-\mu_i(x_{<i})}{\exp(\sigma_i(x_{<i}))}
+\]
+\[
+    J_{i,j}=\frac{\partial x_i}{\partial u_j}=\begin{cases}
+        \exp(\sigma_i(x_{<i})) & i=j \\
+        \frac{\partial \mu_i(x_{<i})}{\partial u_j}+u_i\cdot\frac{\partial \exp(\alpha_i(x_{<i}))}{\partial u_j} & i>j \\
+        0 & i<j
+    \end{cases}
+\]
+thus 
+\[
+    \det(J)=\prod_{i=1}^L \exp(\sigma_i(x_{<i}))>0
+\]
+\[
+    p_X(x)=p_U(u)\cdot\det(J)^{-1}
+\]
+Until here, we show that the Jacobian matrix is invertible and has its determinant is positive.
+\paragraph{P3}
+\textbf{1.}
+\[
+    y=conv(m\cdot w,x)
+\]
+Note that each layer we take a 3*3 layer as convolutional mask:
+\[
+    w=\begin{bmatrix}
+        1 & 1 & 1 \\
+        1 & 1 & 0 \\
+        0 & 0 & 0
+    \end{bmatrix}
+\]
+Thus the visible mask for layer $s$ is:
+\[
+    x[i-s:i+1,j:j+s+1]\cup x[i+l,j+l:j+s+1](l=1,2,\cdots,s)
+\]
+The prove could be showed by induction easily since that the transportation is either to left and above or has its $y_{delta}<x_{delta}$.\\
+\textbf{2.}
+We divide the area into two parts: the horizontal part and the vertical part. Where the horizontal part is the rows above the current pixel, and the vertical part is the pixels at the same row and before the current pixel.\\
+\textbf{Horizontal Part:}
+\[
+    w_A=\begin{bmatrix}
+        1 & 1 & 1 \\
+        0 & 0 & 0 \\
+        0 & 0 & 0
+    \end{bmatrix},
+    w_B=\begin{bmatrix}
+        1 & 1 & 1 \\
+        1 & 1 & 1 \\
+        0 & 0 & 0
+    \end{bmatrix}
+\]
+we update horizontal part individually by using the first layer's mask being $w_A$ and $w_B$ in each afterwards layer. Then in theory, the horizontal part could cover all areas above the current pixel.\\
+\textbf{Vertical Part:}
+\[
+    k_A=\begin{bmatrix}
+        0 & 0 & 0 \\
+        1 & 0 & 0 \\
+        0 & 0 & 0
+    \end{bmatrix},
+    k_B=\begin{bmatrix}
+        0 & 0 & 0 \\
+        1 & 1 & 0 \\
+        0 & 0 & 0
+    \end{bmatrix}
+\]
+we update the vertical part with two part: the horizontal and vertical (from last layer). For the vertical, we use $k_A$ for the first layer and $k_B$ for the second layer. The vertical part could cover all areas before the current pixel in the same row.\\
+The update rule is:
+\[
+    H_i=(kernel_{h,i}\cdot w)*H_{i-1}
+\]
+\[
+    V_i=(kernel_{v,i}\cdot k)*V_{i-1}+H_i
+\]
+\textbf{Intersting Observation:} I notice that we could view the $H_i$ as the cell state and $V_i$ has the hidden state in a LSTM, then the update rule that cell state only depends on itself and the hidden state depends on both cell state and hidden state is same to the LSTM, and I believe this is why that paper is called "Recurrent PixelCNN".\\
+\end{document}

@@ -1,0 +1,10 @@
+test linear:
+succeed
+test conv:
+succeed
+test max pool:
+succeed
+test relu:
+success!
+the final test:
+succeed
